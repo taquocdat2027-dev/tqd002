@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0e1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>TQĐ Nexus</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --panel: #131a2b;
+    --panel-2: #1a2238;
+    --border: #263148;
+    --text: #d4dcef;
+    --text-dim: #7a8499;
+    --accent: #4fc3f7;
+    --accent-2: #7c4dff;
+    --ok: #4caf50;
+    --warn: #ff5370;
+    --gold: #ffb74d;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, 'SF Mono', 'Menlo', monospace;
+    min-height: 100vh;
+    -webkit-user-select: none; user-select: none;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background:
+      radial-gradient(circle at 20% 10%, rgba(79,195,247,0.08), transparent 40%),
+      radial-gradient(circle at 80% 90%, rgba(124,77,255,0.08), transparent 40%);
+    pointer-events: none; z-index: 0;
+  }
+  #app { position: relative; z-index: 1; padding: 20px 16px 32px; max-width: 720px; margin: 0 auto; }
+
+  header { text-align: center; margin-bottom: 20px; }
+  .logo-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 6px; }
+  .logo-icon {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, #4fc3f7, #7c4dff);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 20px; font-weight: 900;
+    box-shadow: 0 0 24px rgba(79,195,247,0.4);
+  }
+  h1 {
+    font-size: 24px; font-weight: 800; letter-spacing: 1.5px;
+    background: linear-gradient(135deg, #4fc3f7, #7c4dff);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  header p { color: var(--text-dim); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; }
+
+  .app-status {
+    margin-top: 10px;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 10px; color: var(--text-dim);
+    letter-spacing: 0.5px;
+    cursor: pointer;
+  }
+  .app-status.set { color: var(--ok); border-color: rgba(76,175,80,0.4); }
+  .app-status.not-set { color: var(--warn); border-color: rgba(255,83,112,0.4); }
+  .app-status .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 8px currentColor;
+  }
+
+  .section-title {
+    font-size: 10px; color: var(--text-dim);
+    letter-spacing: 2px; text-transform: uppercase;
+    margin: 20px 4px 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::before { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btn {
+    position: relative;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 14px; color: var(--text);
+    padding: 18px 14px;
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    cursor: pointer;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 8px; min-height: 110px; justify-content: center;
+    transition: all 0.18s ease;
+    text-align: center; line-height: 1.3;
+    overflow: hidden;
+  }
+  .btn::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, transparent 60%, rgba(255,255,255,0.03) 100%);
+    pointer-events: none;
+  }
+  .btn:active { transform: scale(0.96); background: var(--panel-2); }
+  .btn .icon { font-size: 28px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4)); }
+  .btn .label { font-size: 13px; font-weight: 700; }
+  .btn .sub { font-size: 10px; color: var(--text-dim); font-weight: 500; margin-top: 2px; }
+  .btn.ok { border-color: rgba(76,175,80,0.55); }
+  .btn.ok .icon { filter: drop-shadow(0 0 10px rgba(76,175,80,0.5)); }
+  .btn.danger { border-color: rgba(255,83,112,0.55); }
+  .btn.danger .icon { filter: drop-shadow(0 0 10px rgba(255,83,112,0.5)); }
+  .btn.accent { border-color: rgba(79,195,247,0.55); }
+  .btn.accent .icon { filter: drop-shadow(0 0 10px rgba(79,195,247,0.5)); }
+  .btn.gold { border-color: rgba(255,183,77,0.55); }
+  .btn.gold .icon { filter: drop-shadow(0 0 10px rgba(255,183,77,0.5)); }
+  .btn.wide { grid-column: span 2; min-height: 72px; flex-direction: row; gap: 14px; }
+
+  .slider-panel {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px 16px; margin-top: 10px;
+  }
+  .slider-panel .top {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+  }
+  .slider-panel .top .lbl { font-size: 12px; font-weight: 600; }
+  .slider-panel .top .val {
+    font-size: 14px; font-weight: 800; color: var(--accent);
+    font-family: 'SF Mono', monospace;
+  }
+  input[type="range"] {
+    width: 100%; -webkit-appearance: none; appearance: none;
+    height: 6px; border-radius: 3px;
+    background: linear-gradient(90deg, #4fc3f7, #7c4dff);
+    outline: none; margin: 6px 0;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--accent);
+    box-shadow: 0 0 12px rgba(79,195,247,0.6); cursor: pointer;
+  }
+  .range-marks {
+    display: flex; justify-content: space-between;
+    font-size: 9px; color: var(--text-dim); margin-top: 4px;
+  }
+
+  #toast {
+    position: fixed; bottom: 28px; left: 50%;
+    transform: translateX(-50%) translateY(30px);
+    background: linear-gradient(135deg, #4fc3f7, #7c4dff);
+    color: #fff; padding: 12px 22px;
+    border-radius: 24px; font-size: 12px; font-weight: 700;
+    opacity: 0; transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+    pointer-events: none; z-index: 1000;
+    max-width: 88vw; text-align: center;
+    box-shadow: 0 8px 32px rgba(124,77,255,0.5);
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.78);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    z-index: 500; display: none;
+    align-items: center; justify-content: center;
+    padding: 20px; opacity: 0; transition: opacity 0.2s;
+  }
+  .modal-backdrop.show { display: flex; opacity: 1; }
+  .modal {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 16px; padding: 20px;
+    max-width: 500px; width: 100%;
+    max-height: 85vh; overflow-y: auto;
+    transform: scale(0.95); transition: transform 0.2s;
+  }
+  .modal-backdrop.show .modal { transform: scale(1); }
+  .modal h3 { font-size: 16px; color: var(--accent); margin-bottom: 12px; }
+  .modal .hint {
+    font-size: 11px; color: var(--text-dim);
+    margin-bottom: 12px; line-height: 1.6;
+  }
+  .modal .hint code {
+    background: #060810; color: #82d4ff;
+    padding: 1px 5px; border-radius: 4px;
+    font-family: 'SF Mono', monospace;
+    font-size: 10px;
+  }
+  .modal input[type="text"] {
+    width: 100%;
+    background: #060810; border: 1px solid var(--border);
+    color: var(--text); padding: 12px 14px;
+    border-radius: 10px; font-family: inherit;
+    font-size: 14px; margin-bottom: 12px;
+    outline: none;
+  }
+  .modal input[type="text"]:focus { border-color: var(--accent); }
+  .modal .actions { display: flex; gap: 8px; }
+  .modal .actions button {
+    flex: 1; padding: 12px; border-radius: 10px;
+    border: none; font-family: inherit;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .modal .actions .primary {
+    background: linear-gradient(135deg, #4fc3f7, #7c4dff);
+    color: #fff;
+  }
+  .modal .actions .secondary {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  footer {
+    text-align: center; margin-top: 28px;
+    padding-top: 16px; border-top: 1px solid var(--border);
+    font-size: 10px; color: var(--text-dim); letter-spacing: 1px;
+  }
+  footer .v { color: var(--accent); font-weight: 700; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="logo-row">
+      <div class="logo-icon">T</div>
+      <h1>TQĐ NEXUS</h1>
+    </div>
+    <p>Shizuku Launcher</p>
+    <div class="app-status set" id="appStatus">
+      <span class="dot"></span>
+      <span id="appStatusText">com.shizuku.modlite</span>
+    </div>
+  </header>
+
+  <div class="section-title">Display</div>
+  <div class="grid">
+    <button class="btn ok" data-cmd-key="nhetam">
+      <span class="icon">🌿</span>
+      <span class="label">Nhẹ Tâm</span>
+      <span class="sub">+85% DPI &amp; Size</span>
+    </button>
+    <button class="btn danger" data-cmd-key="fixlo">
+      <span class="icon">🎯</span>
+      <span class="label">Fix Lố</span>
+      <span class="sub" id="fixloSub">Giảm 30%</span>
+    </button>
+  </div>
+
+  <div class="slider-panel">
+    <div class="top">
+      <span class="lbl">🎚️ Mức Fix Lố</span>
+      <span class="val" id="percentVal">30%</span>
+    </div>
+    <input type="range" id="percentSlider" min="10" max="100" step="5" value="30">
+    <div class="range-marks">
+      <span>10%</span><span>30%</span><span>50%</span><span>70%</span><span>100%</span>
+    </div>
+  </div>
+
+  <div class="section-title">System</div>
+  <div class="grid">
+    <button class="btn accent" data-cmd-key="fps">
+      <span class="icon">📊</span>
+      <span class="label">FPS Overlay</span>
+      <span class="sub">Hiện FPS</span>
+    </button>
+    <button class="btn accent" data-cmd-key="killbg">
+      <span class="icon">💀</span>
+      <span class="label">Kill BG</span>
+      <span class="sub">+ Clear Cache</span>
+    </button>
+  </div>
+
+  <div class="section-title">Action</div>
+  <div class="grid">
+    <button class="btn gold wide" data-cmd-key="reset">
+      <span class="icon">🔄</span>
+      <span>
+        <span class="label">Reset về mặc định</span>
+        <span class="sub" style="display:block;">Khôi phục DPI &amp; Size gốc</span>
+      </span>
+    </button>
+  </div>
+
+  <footer>
+    TQĐ Nexus <span class="v">v1.3</span> • Intent Fixed
+  </footer>
+</div>
+
+<!-- MODAL SETTINGS -->
+<div class="modal-backdrop" id="settingsModal">
+  <div class="modal">
+    <h3>⚙️ Cài đặt app đích</h3>
+    <div class="hint">
+      Nhập <b>package name</b> của app Shizuku runner.<br>
+      Mặc định: <code>com.shizuku.modlite</code>
+    </div>
+    <input type="text" id="pkgInput" placeholder="com.shizuku.modlite" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div class="actions">
+      <button class="secondary" id="btnCancelSettings">Huỷ</button>
+      <button class="primary" id="btnSaveSettings">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL COMMAND -->
+<div class="modal-backdrop" id="cmdModal">
+  <div class="modal">
+    <h3 id="cmdModalTitle">Lệnh</h3>
+    <div class="hint">
+      <span id="cmdModalHint">Đã copy. Đang mở app... Nếu app không mở, mở thủ công rồi paste.</span>
+    </div>
+    <pre style="background:#060810;border:1px solid var(--border);border-radius:8px;padding:12px;font-size:11px;color:#82d4ff;overflow-x:auto;white-space:pre-wrap;word-break:break-all;margin-bottom:12px;font-family:'SF Mono',monospace;line-height:1.5;user-select:text;-webkit-user-select:text;" id="cmdModalPre"></pre>
+    <div class="actions">
+      <button class="secondary" id="btnCopyAgain">📋 Copy lại</button>
+      <button class="primary" id="btnReopen">🚀 Mở app</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+(() => {
+'use strict';
+
+const STORAGE_KEY = 'tqd_target_package';
+const PERCENT_KEY = 'tqd_fixlo_percent';
+const DEFAULT_PKG = 'com.shizuku.modlite';
+
+// ═══════════════════════════════════════════════════════
+// COMMANDS
+// ═══════════════════════════════════════════════════════
+
+const buildReadVars =
+  'w=$(wm size | grep -E "Override|Physical" | head -n1 | awk \'{print $3}\' | cut -d"x" -f1);' +
+  'h=$(wm size | grep -E "Override|Physical" | head -n1 | awk \'{print $3}\' | cut -d"x" -f2);' +
+  'd=$(wm density | grep -E "Override|Physical" | head -n1 | awk \'{print $3}\');';
+
+const COMMANDS = {
+  nhetam: 'sh -c \'' + buildReadVars +
+    'nw=$((w*185/100)); nh=$((h*185/100)); nd=$((d*185/100));' +
+    'wm size ${nw}x${nh}; wm density $nd\'',
+
+  fixlo: (p = 30) => 'sh -c \'' + buildReadVars +
+    `nw=$((w*${p}/100)); nh=$((h*${p}/100)); nd=$((d*${p}/100));` +
+    '[ $nw -lt 320 ] && nw=320; [ $nh -lt 480 ] && nh=480; [ $nd -lt 120 ] && nd=120;' +
+    'wm size ${nw}x${nh}; wm density $nd\'',
+
+  reset: 'sh -c \'wm size reset; wm density reset\'',
+  fps: 'sh -c \'service call SurfaceFlinger 1035 i32 1\'',
+  killbg: 'sh -c \'am kill-all; pm trim-caches 99999999999\'',
+};
+
+const LABEL_MAP = {
+  nhetam: '🌿 Nhẹ Tâm',
+  fixlo: '🎯 Fix Lố',
+  reset: '🔄 Reset',
+  fps: '📊 FPS Overlay',
+  killbg: '💀 Kill Background',
+};
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+
+const state = {
+  fixloPercent: 30,
+  targetPkg: DEFAULT_PKG,
+  lastCmd: '',
+  lastKey: '',
+};
+
+const $ = id => document.getElementById(id);
+
+// ═══════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════
+
+const toast = (msg, ms = 1800) => {
+  const el = $('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), ms);
+};
+
+const copyToClipboard = async (text) => {
+  if (navigator.clipboard && window.isSecureContext) {
+    try { await navigator.clipboard.writeText(text); return true; } catch (e) {}
+  }
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0;';
+    ta.setAttribute('readonly', '');
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, text.length);
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  } catch (e) { return false; }
+};
+
+// ═══════════════════════════════════════════════════════
+// MỞ APP ĐÍCH — FIX INTENT
+// ═══════════════════════════════════════════════════════
+
+const openTargetApp = (pkg) => {
+  if (!pkg) return false;
+
+  // Intent chuẩn, có action MAIN + LAUNCHER + fallback url để Chrome
+  // KHÔNG nhảy sang Play Store khi không tìm thấy app.
+  const intentUrl =
+    'intent://#Intent;' +
+    'action=android.intent.action.MAIN;' +
+    'category=android.intent.category.LAUNCHER;' +
+    'package=' + pkg + ';' +
+    'launchFlags=0x10000000;' +
+    'S.browser_fallback_url=data:text/html,;' +
+    'end';
+
+  try {
+    // Dùng hidden iframe để KHÔNG chuyển trang nếu lỗi
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:absolute;width:0;height:0;border:0;opacity:0;';
+    iframe.src = intentUrl;
+    document.body.appendChild(iframe);
+    setTimeout(() => {
+      try { document.body.removeChild(iframe); } catch (e) {}
+    }, 2000);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+const checkAppOpened = (callback) => {
+  const start = Date.now();
+  const check = () => {
+    if (document.hidden || document.visibilityState === 'hidden') {
+      callback(true);
+    } else if (Date.now() - start > 1800) {
+      callback(false);
+    } else {
+      setTimeout(check, 100);
+    }
+  };
+  setTimeout(check, 250);
+};
+
+// ═══════════════════════════════════════════════════════
+// SAVE / LOAD PKG
+// ═══════════════════════════════════════════════════════
+
+const loadPkg = () => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    state.targetPkg = (saved && saved.trim()) ? saved.trim() : DEFAULT_PKG;
+  } catch (e) {
+    state.targetPkg = DEFAULT_PKG;
+  }
+  updateAppStatus();
+};
+
+const savePkg = (pkg) => {
+  state.targetPkg = pkg.trim() || DEFAULT_PKG;
+  try { localStorage.setItem(STORAGE_KEY, state.targetPkg); } catch (e) {}
+  updateAppStatus();
+};
+
+const updateAppStatus = () => {
+  const el = $('appStatus');
+  const txt = $('appStatusText');
+  if (state.targetPkg) {
+    el.classList.remove('not-set');
+    el.classList.add('set');
+    txt.textContent = '✓ ' + state.targetPkg;
+  } else {
+    el.classList.remove('set');
+    el.classList.add('not-set');
+    txt.textContent = 'Chưa cài app đích';
+  }
+};
+
+// ═══════════════════════════════════════════════════════
+// MODAL SETTINGS
+// ═══════════════════════════════════════════════════════
+
+const openSettings = () => {
+  $('pkgInput').value = state.targetPkg || '';
+  $('settingsModal').classList.add('show');
+  setTimeout(() => $('pkgInput').focus(), 200);
+};
+
+const closeSettings = () => $('settingsModal').classList.remove('show');
+
+$('appStatus').addEventListener('click', openSettings);
+$('btnCancelSettings').addEventListener('click', closeSettings);
+$('btnSaveSettings').addEventListener('click', () => {
+  const val = $('pkgInput').value.trim();
+  savePkg(val);
+  closeSettings();
+  toast(val ? '✓ Đã lưu: ' + val : '⚠ Reset về mặc định');
+});
+
+$('settingsModal').addEventListener('click', (e) => {
+  if (e.target === $('settingsModal')) closeSettings();
+});
+
+// ═══════════════════════════════════════════════════════
+// MODAL COMMAND
+// ═══════════════════════════════════════════════════════
+
+const openCmdModal = (title, cmd, hint) => {
+  $('cmdModalTitle').textContent = title;
+  $('cmdModalPre').textContent = cmd;
+  $('cmdModalHint').textContent = hint || 'Đã copy. Mở app thủ công rồi paste.';
+  $('cmdModal').classList.add('show');
+  state.lastCmd = cmd;
+};
+
+const closeCmdModal = () => $('cmdModal').classList.remove('show');
+
+$('cmdModal').addEventListener('click', (e) => {
+  if (e.target === $('cmdModal')) closeCmdModal();
+});
+
+$('btnCopyAgain').addEventListener('click', async () => {
+  const ok = await copyToClipboard(state.lastCmd);
+  toast(ok ? '📋 Đã copy lại' : '⚠ Copy lỗi');
+});
+
+$('btnReopen').addEventListener('click', () => {
+  if (state.targetPkg) {
+    openTargetApp(state.targetPkg);
+    closeCmdModal();
+  } else {
+    closeCmdModal();
+    openSettings();
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// SLIDER
+// ═══════════════════════════════════════════════════════
+
+const slider = $('percentSlider');
+const valEl = $('percentVal');
+const fixloSub = $('fixloSub');
+
+const setPercent = (v) => {
+  state.fixloPercent = v;
+  slider.value = v;
+  valEl.textContent = v + '%';
+  fixloSub.textContent = `Giảm ${100 - v}%`;
+};
+
+slider.addEventListener('input', () => {
+  const v = parseInt(slider.value, 10);
+  setPercent(v);
+  if (navigator.vibrate) navigator.vibrate(4);
+});
+
+slider.addEventListener('change', () => {
+  try { localStorage.setItem(PERCENT_KEY, String(state.fixloPercent)); } catch (e) {}
+});
+
+try {
+  const s = localStorage.getItem(PERCENT_KEY);
+  if (s) {
+    const v = parseInt(s, 10);
+    if (v >= 10 && v <= 100) setPercent(v);
+  }
+} catch (e) {}
+
+// ═══════════════════════════════════════════════════════
+// MAIN HANDLER
+// ═══════════════════════════════════════════════════════
+
+const getCommand = (key) => {
+  if (key === 'fixlo') return COMMANDS.fixlo(state.fixloPercent);
+  return COMMANDS[key];
+};
+
+document.querySelectorAll('.btn[data-cmd-key]').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const key = btn.dataset.cmdKey;
+    const cmd = getCommand(key);
+    if (!cmd) return;
+
+    if (navigator.vibrate) navigator.vibrate(15);
+
+    const copied = await copyToClipboard(cmd);
+
+    if (!state.targetPkg) {
+      toast('⚠ Chưa cài package name');
+      openCmdModal(LABEL_MAP[key], cmd, '⚠ Chưa cài app đích.');
+      return;
+    }
+
+    state.lastKey = key;
+    state.lastCmd = cmd;
+
+    openTargetApp(state.targetPkg);
+
+    checkAppOpened((didOpen) => {
+      if (didOpen) {
+        toast(copied ? '📋 Đã copy — paste & chạy' : '⚠ Copy lỗi — copy tay', 2500);
+      } else {
+        openCmdModal(
+          LABEL_MAP[key],
+          cmd,
+          '⚠ Không mở được app "' + state.targetPkg + '". Đã copy lệnh. Mở app thủ công rồi paste.'
+        );
+      }
+    });
+  });
+});
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+
+loadPkg();
+
+console.log('%c TQĐ NEXUS v1.3 ', 'background:linear-gradient(135deg,#4fc3f7,#7c4dff);color:#fff;padding:4px 12px;border-radius:4px;font-weight:bold;');
+console.log('Package: ' + DEFAULT_PKG + ' — Intent fixed, không nhảy Play Store nữa.');
+})();
+</script>
+</body>
+</html>
